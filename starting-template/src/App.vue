@@ -1,19 +1,19 @@
 <template>
     <div id="app">
 
-        <app-header/>
+        <app-header :charactersSearch="charactersSearch"/>
 
         <div class="container">
             <h1 class="pt-3 pb-3">Персонажи Marvel</h1>
 
-            <app-modal :character = "characters[characterIndex]"/>
+            <app-modal :character = "filterCharacters[characterIndex]"/>
 
-            <spinner/>
+            <spinner v-if="loading"/>
 
             <div class="row">
-                <div v-for="(el, idx) in characters"
+                <div v-for="(el, idx) in filterCharacters"
                     :key="el.id" 
-                class="card mb-3" style="max-width: 540px;">
+                class="card mb-3 col-sm-12 col-md-6 col-lg-4">
                     <div class="row g-0">
                         <div class="col-md-4">
                             <img :src="el.thumbnail" class="img-fluid rounded-start" :alt="el.name">
@@ -53,19 +53,32 @@
                 loading: false,
                 characters: [],
                 characterIndex: 0,
+                search: '',
             }
         },
         methods: {
-            //https://netology-api-marvel.herokuapp.com/characters
             fetchCharacters: function() {
                 return fetch('https://netology-api-marvel.herokuapp.com/characters')
                 .then(res => res.json())
                 .then(json => this.characters = json)    
-            }                
+            },
+            charactersSearch: function(value) {
+                this.search = value
+            }           
         },
-        computed: {},
-        mounted() {
-            this.fetchCharacters()
+        computed: {
+            filterCharacters: function() {
+                let {search, characters} = this
+                return characters.filter(characters => {
+                    return characters.name.toLowerCase().
+                    indexOf(search.toLowerCase()) !== -1
+                })
+            },
+        },
+        async mounted() {
+            this.loading = true
+            await this.fetchCharacters()
+            this.loading = false
         }
     }
 </script>
